@@ -4,8 +4,8 @@ import tkinter as tk
 # Windowsの拡大率による座標・サイズのずれを防ぐ。
 ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 1920
+HEIGHT = 1080
 STRIPE_WIDTH = 40
 
 # 現在の配置：プロジェクタはメイン画面の右隣・上端揃え。

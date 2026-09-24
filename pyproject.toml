@@ -1,14 +1,20 @@
 [project]
 name = "structured-light-reconstruction"
 version = "0.1.0"
-description = "Add your description here"
+description = "構造化光を用いた三次元形状復元"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
-
-[project.scripts]
-structured-light-reconstruction = "structured_light_reconstruction:main"
+# PySpin (spinnaker_python) は PyPI で配布されていないため、ここには書けません。
+# FLIR 配布の wheel を uv pip install で別途導入します。詳細は README を参照。
+dependencies = [
+    "numpy>=2.0",
+    "opencv-contrib-python>=4.10",
+    "pillow>=11.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "slr"

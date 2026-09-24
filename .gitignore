@@ -3,3 +3,9 @@ __pycache__/
 setup/installers/
 setup/vendor/
 setup/captures/
+
+# 撮影データ・生成物（サイズが大きいため Git 管理外）
+data/
+
+# 先輩リポジトリからの移植元コード（参照用・移植後に削除）
+reference/

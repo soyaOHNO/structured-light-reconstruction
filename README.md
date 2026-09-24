@@ -1,164 +1,111 @@
 # structured-light-reconstruction
 
-構造化光（structured light）を用いた三次元形状復元のプロジェクトです。
+プロジェクタとカメラを用いた、構造化光による三次元形状復元の研究プロジェクトです。
 
-## 1. 概要
+対象物にパターンを投影して撮影し、カメラ画素とプロジェクタ画素の対応を求めます。キャリブレーションで得たパラメータと対応点を使い、三角測量によって三次元形状を復元することを目指します。
 
-プロジェクタで既知のパターンを対象物へ投影し、それをカメラで撮影します。撮影画像からプロジェクタ画素とカメラ画素の対応を求め、キャリブレーション済みのカメラ・プロジェクタ間の三角測量によって対象物の三次元形状を復元することを目的とします。
+## 現在の状態
 
-処理の流れは次を想定しています。
+**カメラ・プロジェクタの基本動作確認まで完了しています。次は研究室の暗室に機材を設置し、実際の配置で計測の準備を進めます。**
 
-```
-パターン生成 → 投影・撮影（同期） → デコード（対応点抽出） → キャリブレーション → 三角測量 → 点群出力
-```
+| 項目 | 状態 |
+| --- | --- |
+| Windows・uv・Python の環境構築 | 完了 |
+| Spinnaker SDK・PySpin の導入 | 完了 |
+| SpinView での映像表示・撮影 | 確認済み |
+| Python からのカメラ認識・静止画保存 | 確認済み |
+| プロジェクタへの白・黒・縞パターン表示 | 確認済み |
+| 白・黒・縞パターンの手動撮影 | 確認済み |
+| 暗室への機材設置 | これから |
+| 投影・撮影の自動化 | 未実施（試作用スクリプトは用意済み、実機での実行・検証はこれから） |
+| カメラ・プロジェクタのキャリブレーション | これから |
+| 計測対象の撮影・三次元復元・精度評価 | これから |
 
-### 現在の進捗
+白・黒・縞の動作確認と、グレーコードの生成・撮影・デコードは別の段階です。グレーコードによる計測はまだ実施していません。
 
-**ハードウェアのセットアップと動作確認までが完了しています。** 復元アルゴリズム本体（パターン生成・デコード・キャリブレーション・三角測量）はこれからの実装です。
-
-- 完了: Spinnaker SDK / PySpin の導入、Python からのカメラ認識・静止画撮影、プロジェクタへの全画面パターン表示
-- 未着手: 計測手順（[measurement/measurement.md](measurement/measurement.md) は空ファイル）、および `src/` 以下の本体実装（現状は `uv init` が生成したひな形のみ）
-
-### 動作確認環境
+## 使用環境
 
 | 項目 | 構成 |
 | --- | --- |
-| OS | Windows 64bit（Windows 11） |
-| カメラ | FLIR Blackfly S BFS-U3-23S3C（USB 3 接続） |
-| プロジェクタ | BenQ・HDMI 接続、800 × 600 / 60 Hz / 拡大率 100% |
+| OS | Windows 11（64bit） |
+| カメラ | FLIR Blackfly S BFS-U3-23S3C、USB 3 接続 |
+| レンズ | TAMRON、焦点距離 16 mm、F/2.0 |
+| プロジェクタ | BenQ（型番未確認）、HDMI 接続 |
+| 投影設定 | 800 × 600、60 Hz、拡大率 100%、拡張表示、台形補正なし |
 | Spinnaker SDK / SpinView | 4.4.0.246（x64） |
 | PySpin | spinnaker_python 4.4.0.246（cp312 / win_amd64） |
-| Python | CPython 3.12（`.python-version` は 3.12） |
-| パッケージ管理 | uv 0.12.13 |
+| Python | CPython 3.12.14 |
+| 環境・パッケージ管理 | uv 0.12.13、プロジェクト内の `.venv` |
 
-詳細な手順は [setup/setup.md](setup/setup.md) を参照してください。
+露光時間・ゲイン・絞り・ピントなどの計測条件は、暗室での配置と投影状態を確認しながら決めます。これまでの動作確認で使った値は、計測用の確定値にはしません。
 
-## 2. TODO
+## 手順書とファイルの役割
 
-### 計測フェーズ（次にやること）
-
-- [ ] `measurement/measurement.md` の執筆（撮影手順書。現在は空ファイル）
-- [ ] 露光時間・ゲイン・ピント・絞りの調整手順の確立と、計測用の画素形式の決定
-- [ ] グレイコードパターン（および必要なら位相シフトパターン）の生成
-- [ ] 投影と撮影を同期させる自動撮影スクリプト（パターン切り替え → 待機 → 撮影のループ）
-- [ ] 撮影画像セットの保存規約（ディレクトリ名・ファイル名・メタデータ）の決定
-
-### 復元フェーズ
-
-- [ ] デコード処理（撮影画像からプロジェクタ座標を復元し、カメラ画素との対応を作る）
-- [ ] 全白・全黒画像を用いた有効画素マスク（影・照り返し・飽和の除去）
-- [ ] カメラの内部パラメータ・レンズ歪みのキャリブレーション
-- [ ] プロジェクタの内部パラメータおよびカメラ・プロジェクタ間の外部パラメータのキャリブレーション
-- [ ] 三角測量による点群生成
-- [ ] 点群の出力（PLY 等）と可視化
-- [ ] 平面・球など既知形状を用いた精度評価
-
-### 整備
-
-- [ ] `src/structured_light_reconstruction/` に本体モジュールを実装（現状 `main()` のひな形のみ）
-- [ ] `pyproject.toml` の `description` を記入し、依存パッケージ（numpy・opencv-python 等）を追加
-- [ ] PySpin を `uv sync` で消さずに扱う方法の整理（現状は wheel を `uv pip install` で別途導入）
-- [ ] Git リポジトリの初期化（現時点では未初期化。`.gitignore` は用意済み）
-- [ ] 自動テストの整備
-
-## 3. ディレクトリ構成
-
-```text
-structured-light-reconstruction/
-├── README.md                  このファイル
-├── pyproject.toml             プロジェクト定義（uv / uv_build）
-├── uv.lock                    依存の固定ファイル
-├── .python-version            使用する Python のバージョン（3.12）
-├── .gitignore                 Git 除外設定
-│
-├── src/
-│   └── structured_light_reconstruction/
-│       └── __init__.py        パッケージ本体（現状はひな形）
-│
-├── setup/                     セットアップ手順と動作確認スクリプト
-│   ├── setup.md               Windows でのカメラ・プロジェクタ構築手順書
-│   ├── check_camera.py        カメラ認識の確認
-│   ├── capture_one.py         静止画 1 枚の撮影・保存
-│   ├── projector_test.py      プロジェクタへの全画面表示（白／黒／縞）
-│   ├── captures/              動作確認で撮影した画像（Git 管理外）
-│   ├── installers/            Spinnaker SDK の EXE と PySpin の ZIP（Git 管理外・約 600 MB）
-│   └── vendor/                PySpin ZIP の展開先。wheel と公式ドキュメント（Git 管理外）
-│
-└── measurement/               計測フェーズ
-    ├── measurement.md         計測手順書（未執筆・空ファイル）
-    └── captures/
-        └── manual_test/       手動での投影・撮影テスト画像
-            ├── white.png
-            ├── black.png
-            └── stripes.png
-```
-
-`setup/installers/`、`setup/vendor/`、`setup/captures/`、`.venv/` は `.gitignore` で除外しています。別 PC で環境を作り直す場合は、[setup/setup.md](setup/setup.md) の手順 5 に従って配布物を再取得してください。
-
-## 4. 各ファイルの役割
-
-### セットアップ・動作確認
-
-| ファイル | 役割 |
+| 場所 | 役割 |
 | --- | --- |
-| [setup/setup.md](setup/setup.md) | Windows 上でのカメラ・プロジェクタ構築手順書。uv によるプロジェクト作成、Spinnaker SDK のインストール、SpinView での確認、PySpin の導入、プロジェクタの 2 画面設定、環境の再作成手順、完了チェックリストまでを網羅しています。 |
-| [setup/check_camera.py](setup/check_camera.py) | PySpin で `System` を取得して接続カメラを列挙し、台数・型番（`DeviceModelName`）・シリアル番号（`DeviceSerialNumber`）を表示します。カメラが認識できているかの最小確認用です。 |
-| [setup/capture_one.py](setup/capture_one.py) | カメラを初期化し、トリガ off・連続取得モードで 1 フレーム取得して `setup/captures/` へ日時付き PNG（`capture_YYYYmmdd_HHMMSS_ffffff.png`）を保存します。`ImageProcessor` で HQ Linear のデモザイクを行い RGB8 へ変換します。この RGB8 変換は表示確認用で、計測用の画素形式は別途決める前提です。`finally` で取得停止・`DeInit`・`ReleaseInstance` まで必ず解放します。 |
-| [setup/projector_test.py](setup/projector_test.py) | Tkinter で枠なし全画面ウィンドウをプロジェクタ側ディスプレイに出し、パターンを表示します。`SetProcessDpiAwareness(2)` で拡大率によるずれを防ぎ、`GetSystemMetrics(0)`（メイン画面の幅）を X オフセットにして「プロジェクタがメイン画面の右隣・上端揃え」という配置を前提に表示位置を決めています。キー操作は W = 全白、B = 全黒、S = 縦縞（幅 40 px）、Esc = 終了。解像度は `WIDTH = 800` / `HEIGHT = 600` に固定です。 |
+| [setup/setup.md](setup/setup.md) | 環境構築から、カメラで撮影しプロジェクタへ表示できるまでの手順 |
+| `setup/check_camera.py` | カメラの認識確認 |
+| `setup/capture_one.py` | 静止画 1 枚の撮影・保存 |
+| `setup/projector_test.py` | 白・黒・縞パターンの投影確認 |
+| `setup/installers/` | SDK インストーラと PySpin の配布 ZIP |
+| `setup/vendor/` | PySpin 配布 ZIP の展開先（wheel、公式資料、サンプル） |
+| `setup/captures/` | セットアップ時の撮影画像 |
+| [measurement/measurement.md](measurement/measurement.md) | 暗室への設置、撮影条件、キャリブレーション、計測の手順を実施に合わせて記録する文書 |
+| `measurement/` | 計測用スクリプト、撮影データ、設定、キャリブレーション結果の配置先 |
+| `pyproject.toml` / `uv.lock` / `.python-version` | プロジェクトと Python 環境の管理 |
 
-### 計測
+`setup/` は機器を使えるようにするための準備、`measurement/` は実際の計測に向けた作業を扱います。計測データやキャリブレーション結果の細かな保存構成は、実装と運用に合わせて決めます。
 
-| ファイル | 役割 |
-| --- | --- |
-| [measurement/measurement.md](measurement/measurement.md) | 計測手順書。露光・ピント調整、グレイコード生成、自動撮影、キャリブレーションを扱う予定ですが、**現在は空ファイル**です。 |
-| `measurement/captures/manual_test/` | `projector_test.py` の白・黒・縞をカメラで手動撮影したテスト画像です。 |
+## 動作確認の実行
 
-### プロジェクト管理
+初回の環境構築は [setup/setup.md](setup/setup.md) を参照してください。以下は環境構築後に、プロジェクトのルートディレクトリで実行するコマンドです。
 
-| ファイル | 役割 |
-| --- | --- |
-| [pyproject.toml](pyproject.toml) | プロジェクト定義。`requires-python = ">=3.12"`、ビルドバックエンドは `uv_build`、コンソールスクリプト `structured-light-reconstruction` を `structured_light_reconstruction:main` に割り当てています。`dependencies` は現在空です。 |
-| [uv.lock](uv.lock) | uv の依存固定ファイル。現状は本パッケージ自身（editable）のみです。 |
-| [src/structured_light_reconstruction/\_\_init\_\_.py](src/structured_light_reconstruction/__init__.py) | パッケージのエントリポイント。現状は `uv init` が生成した `main()` のひな形です。 |
-| [.gitignore](.gitignore) | `.venv/`、`__pycache__/`、`setup/installers/`、`setup/vendor/`、`setup/captures/` を除外します。 |
-
-## 5. セットアップと実行
-
-前提として Spinnaker SDK（4.4.0.246 x64）がインストール済みで、PySpin の wheel が `setup/vendor/` に展開されている必要があります。初回構築は [setup/setup.md](setup/setup.md) を参照してください。
+Python でカメラを使う前に、SpinView を終了してください。
 
 ```powershell
-# 仮想環境の作成と同期
-uv sync
-
-# PySpin の導入（pyproject.toml / uv.lock には登録されないため毎回手動）
-uv pip install ".\setup\vendor\spinnaker_python-4.4.0.246-cp312-cp312-win_amd64\spinnaker_python-4.4.0.246-cp312-cp312-win_amd64.whl"
-
-# 動作確認
-uv run --no-sync python setup/check_camera.py      # カメラ認識
-uv run --no-sync python setup/capture_one.py       # 1 枚撮影
-uv run --no-sync python setup/projector_test.py    # 投影テスト（W/B/S/Esc）
+uv run --no-sync python setup/check_camera.py
 ```
 
-PySpin はロックファイルの管理外なので、`uv sync` や仮想環境の再作成で消えることがあります。その場合は wheel のインストールをやり直してください。スクリプトの実行は `--no-sync` を付けて、`uv` による自動同期で PySpin が削除されるのを防ぎます。
+```powershell
+uv run --no-sync python setup/capture_one.py
+```
 
-> **注意:** カメラは SpinView と Python から同時に開けません。Python スクリプトを実行する前に SpinView を終了してください。
+```powershell
+uv run --no-sync python setup/projector_test.py
+```
 
-## 6. 参考資料
+投影テストの操作は `W` = 白、`B` = 黒、`S` = 縦縞、`Esc` = 終了です。プロジェクタは Windows の拡張表示で、メイン画面の右隣・上端揃えに配置します。
 
-### 公式ドキュメント・SDK
+### PySpin の扱い
 
-- [Teledyne FLIR Spinnaker SDK](https://www.flir.com/products/spinnaker-sdk/) — SDK 本体と PySpin の配布元
-- `setup/vendor/.../docs/Spinnaker-Python-Programmer-Guide.pdf` — PySpin のプログラミングガイド（ローカル）
-- `setup/vendor/.../docs/site/api/pyspin_ref/` — PySpin の API リファレンス（ローカル HTML）
-- `setup/vendor/.../Examples/` — PySpin の公式サンプルコード（ローカル）
-- [uv ドキュメント](https://docs.astral.sh/uv/) — パッケージ・環境管理
-- [OpenCV: Camera Calibration and 3D Reconstruction](https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html) — キャリブレーションと三角測量
-- [OpenCV: Structured Light (`cv::structured_light`)](https://docs.opencv.org/4.x/d1/d90/namespacecv_1_1structured__light.html) — グレイコードパターンの生成・デコード
+現在、PySpin は配布 wheel を `uv pip install` で導入しており、`pyproject.toml` / `uv.lock` の管理外です。そのため、通常のスクリプト実行には `uv run --no-sync` を使います。
 
-### 技術資料
+`uv sync` や仮想環境の再作成後に PySpin が利用できなくなった場合は、wheel を再インストールします。毎回の実行前にインストールする必要はありません。
 
-- S. Inokuchi, K. Sato, F. Matsuda, "Range imaging system for 3-D object recognition," ICPR 1984 — グレイコード法の基礎
-- D. Scharstein and R. Szeliski, "High-accuracy stereo depth maps using structured light," CVPR 2003 — 構造化光による高精度ステレオ
-- J. Salvi, S. Fernandez, T. Pribanic, X. Llado, "A state of the art in structured light patterns for surface profilometry," Pattern Recognition 43(8), 2010 — パターン方式の網羅的なサーベイ
-- D. Moreno and G. Taubin, "Simple, Accurate, and Robust Projector-Camera Calibration," 3DIMPVT 2012 — プロジェクタ・カメラのキャリブレーション手法
-- S. Zhang, "High-speed 3D shape measurement with structured light methods: A review," Optics and Lasers in Engineering 106, 2018 — 位相シフト法を含む近年の総説
+```powershell
+uv pip install ".\setup\vendor\spinnaker_python-4.4.0.246-cp312-cp312-win_amd64\spinnaker_python-4.4.0.246-cp312-cp312-win_amd64.whl"
+```
+
+## 今後の進め方
+
+実際に機材を動かしながら、各段階の手順・設定・結果を `measurement/measurement.md` に記録します。
+
+1. **暗室への設置**  
+   カメラ・プロジェクタ・対象物の配置を決め、固定します。投影範囲とカメラの撮影範囲が重なるように調整します。
+2. **撮影条件の調整と自動撮影の確認**  
+   ピント・絞り・露光・ゲインなどを調整し、白・黒・縞で写りを確認します。その配置で自動投影・撮影を試し、パターンと保存画像の対応、切り替え後の待機時間、保存内容を確認します。
+3. **キャリブレーション**  
+   校正用ターゲットと手法を決め、必要な画像を撮影します。カメラとプロジェクタの内部パラメータ・歪み、および両者の相対位置・姿勢を求め、校正結果を確認します。方式に応じて、この段階でグレーコードの生成・撮影・デコードも準備します。
+4. **計測対象の撮影**  
+   校正時の機器配置と光学条件を維持し、対象物にパターンを投影して撮影します。画像と撮影設定、使用した校正結果を対応付けて保存します。
+5. **三次元復元と評価**  
+   パターンをデコードして対応点を求め、信頼できる画素を選別して三角測量を行います。点群を出力し、既知形状などで結果を評価します。
+
+自動撮影はまずパターン表示後に待機して撮影する方式で検証します。ハードウェア同期の成立や、三次元計測の精度が確認できている段階ではありません。
+
+## 記録・管理の方針
+
+- README には、プロジェクトの目的・構成・進捗・手順書への入口をまとめます。
+- セットアップの再現手順は `setup/setup.md`、計測の手順と条件は `measurement/measurement.md` にまとめます。
+- 撮影ごとの画像・設定・校正結果を区別して保存し、後から条件を追えるようにします。
+- ソースコードと手順書は Git で管理し、仮想環境・配布インストーラ・大量の撮影データは Git 管理対象から除外する方針です。撮影データと校正結果は別途バックアップします。
